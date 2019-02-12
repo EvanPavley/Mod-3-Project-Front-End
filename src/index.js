@@ -64,7 +64,9 @@ document.addEventListener('DOMContentLoaded', e => {
       createAnswerForm = document.querySelector('#create-answer-form')
       createAnswerForm.remove()
     }
-
+    newPage.addEventListener('input', e =>{
+      console.log('hey');
+    })
   })
 
   newPage.addEventListener('submit', e => {
@@ -164,7 +166,6 @@ document.addEventListener('DOMContentLoaded', e => {
       quizNameRow = document.querySelector('#quiz-name-row')
       fetchAllQuizzes(quizNameRow)
     }
-    console.log(e.target);
 
     if (e.target.id === 'answer'){
       let thisAnswerId = parseInt(e.target.dataset.id)
@@ -174,6 +175,18 @@ document.addEventListener('DOMContentLoaded', e => {
       }else {
         e.target.parentElement.innerHTML += '<p style="color: #FF3131" >Incorrect :(</p>'
       }
+    }
+  })
+  startQuiz.addEventListener('submit', e => {
+    e.preventDefault()
+    let thisAnswerId = parseInt(e.target.dataset.id)
+    let thisAnswer = allanswers.find(a => a.id == thisAnswerId)
+    let userInputAnswer = e.target.users_answer.value
+    let checker = e.target.parentElement.querySelector('#checker')
+    if (userInputAnswer.includes(thisAnswer.description)){
+      checker.innerHTML += '<p style="color: #00e600" >Correct!</p>'
+    }else {
+      checker.innerHTML += `<p style="color: #FF3131" >Incorrect :(</p><p style="color: #FF3131" >The Correct Answer is "${thisAnswer.description}"</p>`
     }
   })
 });
@@ -293,16 +306,37 @@ return `
 
 function addHTMLtoShowQuestions(question) {
   let theseAnswers = allanswers.filter(a => a.question_id == question.id)
-  return `
-  <div>
-    <form data-id=${question.id}>
-      <h3>${question.description}</h3>
-      ${showAllAnswers(theseAnswers)}
+  if (question.multiple_choice === true){
+    return `
+    <div>
+      <form data-id=${question.id}>
+        <h3>${question.description}</h3>
+        ${showAllAnswers(theseAnswers)}
+        <br>
+        <br>
+      </form>
+    </div>
+    `
+  }else {
+    thisAnswersId = theseAnswers.map(a => a.id)
+    return `
+    <div>
+      <form data-id=${thisAnswersId}>
+        <h3>${question.description}</h3>
+        <div class="form-group">
+          <input name="users_answer" class="form-control" id="userAnswer" data-id=${thisAnswersId} placeholder="Enter Your Answer Here">
+          <br>
+          <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+        </div>
+      </form>
+      <div id='checker'>
+      </div>
+      <hr>
       <br>
       <br>
-    </form>
-  </div>
-  `
+    </div>
+    `
+  }
 }
 
 function showAllQuestions(questions) {
