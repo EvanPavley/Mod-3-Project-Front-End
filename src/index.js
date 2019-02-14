@@ -1,18 +1,29 @@
+//******************************************************************************
+// GLOBAL VARIBALS *************************************************************
+// Assigning URLs
 let quizUrl = 'http://localhost:3000/api/v1/quizzes'
 let questionUrl = 'http://localhost:3000/api/v1/questions'
 let answerUrl = 'http://localhost:3000/api/v1/answers'
+// Assigning Database Arrays
 let allquizzes = []
 let allquestions = []
 let allanswers = []
+// Global Selecting
 let showPage = document.querySelector('#show-page')
+// Creating the Show page Seleton
 showPage.innerHTML = addHTMLforShowPage()
 
+//******************************************************************************
+// DOM CONTENT LOADED EVENT LISTENER *******************************************
 document.addEventListener('DOMContentLoaded', e => {
+  // Selecting onload
   let newQuizBtn = document.querySelector('#new-quiz-btn')
   let newPage = document.querySelector('#new-page')
   let startQuiz = document.querySelector('#start-quiz')
   let quizNameRow = document.querySelector('#quiz-name-row')
 
+  // INITIAL FETCHING **********************************************************
+  // Fetching and rendering all quizzes for the show page
   function fetchAllQuizzes(ele) {
     fetch(quizUrl)
     .then(r => r.json())
@@ -22,26 +33,29 @@ document.addEventListener('DOMContentLoaded', e => {
     })
   }
   fetchAllQuizzes(quizNameRow)
-
+  // Fetching questions and answers for local varaibals
   fetch(questionUrl)
   .then(r => r.json())
   .then(d => {
     allquestions = d
   })
-
   fetch(answerUrl)
   .then(r => r.json())
   .then(d => {
     allanswers = d
   })
 
-  showPage.addEventListener('click', e =>{
+  // EVENT LISTENERS FOR PAGES *************************************************
 
+  // SHOW PAGE LISTENER --------------------------------------------------------
+  showPage.addEventListener('click', e =>{
     showPageToggle = document.querySelector('#show-page-toggle')
+    // for clicking on create a quiz
     if (e.target.id === 'new-quiz-btn') {
       showPageToggle.remove()
       newPage.innerHTML = addHTMLforNewQuizForm()
     }
+    // for clicking on a quiz
     if (e.target.id === 'quiz-block'){
       let thisQuizId = parseInt(e.target.dataset.id)
       let thisQuiz = allquizzes.find(q => q.id === thisQuizId)
@@ -49,10 +63,11 @@ document.addEventListener('DOMContentLoaded', e => {
       showPageToggle.remove()
       startQuiz.innerHTML = addHTMLtoStartQuiz(thisQuiz, theseQuestions)
     }
-  })
+  })// END OF SHOW PAGE LISTENER -----------------------------------------------
 
+  // NEW PAGE CLICK LISTENER ---------------------------------------------------
   newPage.addEventListener('click', e => {
-
+    // for clicking the back button
     if (e.target.id === 'rerender-show-btn') {
       newPageToggle = document.querySelector('#new-page-toggle')
       newPageToggle.remove()
@@ -60,16 +75,17 @@ document.addEventListener('DOMContentLoaded', e => {
       quizNameRow = document.querySelector('#quiz-name-row')
       fetchAllQuizzes(quizNameRow)
     }
-
+    // for clicking the done button on the answer form
     if (e.target.id === 'answer-done-btn') {
       answerFormDiv = document.querySelector('#answer-form-div')
       answerFormDiv.remove()
     }
-  })
+  })// END OF NEW PAGE CLICK LISTENER ------------------------------------------
 
+  // NEW PAGE SUBMIT LISTENER --------------------------------------------------
   newPage.addEventListener('submit', e => {
     e.preventDefault()
-
+    // for submitting the create quiz form
     if (e.target.id === 'create-quiz-form') {
       let newQuiz
       let newQuizTitle = e.target.quizTitle.value
@@ -93,8 +109,8 @@ document.addEventListener('DOMContentLoaded', e => {
         newPageToggle.remove()
         newPage.innerHTML = addHTMLforNewQuestionForm(newQuiz)
       })
-    }//end of if for quiz form
-
+    }
+    // for submitting the create question form
     if (e.target.id === 'create-question-form') {
       let createQuestionForm = document.querySelector('#create-question-form')
       let newQuestion;
@@ -123,8 +139,8 @@ document.addEventListener('DOMContentLoaded', e => {
         completedQuestions.innerHTML += addHTMLforNewAnswerForm(newQuestion)
         createQuestionForm.reset()
       })
-    }//end of if for question form
-
+    }
+    // for submitting the create answer form
     if (e.target.id === 'create-answer-form') {
       let createAnswerForm = document.querySelector('#create-answer-form')
       let newAnswer;
@@ -152,23 +168,26 @@ document.addEventListener('DOMContentLoaded', e => {
         completedAnswers.innerHTML += `<span id='answer-span'>${newAnswer.description}, </span>`
         createAnswerForm.reset()
       })
-    }//end of if for answer form
-  })
+    }
+  })// END OF NEW PAGE SUBMIT LISTENER -----------------------------------------
 
+  //Assigning variables for showing the quiz score
   let numberCorrect = 0;
   let numberIncorrect = 0;
+  // START QUIZ CLICK LISTENER -------------------------------------------------
   startQuiz.addEventListener('click', e => {
-    console.log(e.target)
+    // for clicking the go back button
     if (e.target.id === 'rerender-show-btn') {
       startQuizToggle = document.querySelector('#start-quiz-toggle')
       startQuizToggle.remove()
+      //reset numbers
       numberCorrect = 0
       numberIncorrect = 0
       showPage.innerHTML = addHTMLforShowPage()
       quizNameRow = document.querySelector('#quiz-name-row')
       fetchAllQuizzes(quizNameRow)
     }
-
+    // for clicking on a multiple choice answer
     if (e.target.id === 'answer'){
       let thisAnswerId = parseInt(e.target.dataset.id)
       let thisAnswer = allanswers.find(a => a.id === thisAnswerId)
@@ -180,7 +199,7 @@ document.addEventListener('DOMContentLoaded', e => {
         numberIncorrect++
       }
     }
-
+    // for clicking on the submit quiz button (which is not a submit)
     if (e.target.id === 'submit-quiz') {
       quizResults = document.querySelector('#quiz-results')
       quizBodyToggle = document.querySelector('#quiz-body-toggle')
@@ -191,7 +210,9 @@ document.addEventListener('DOMContentLoaded', e => {
       submitQuizBtn.remove()
       quizResults.innerHTML = addHTMLforResults(precentCorrect)
     }
-  });
+  });// END OF START QUIZ CLICK LISTENER ---------------------------------------
+
+  // START QUIZ SUBMIT LISTENER ------------------------------------------------
   startQuiz.addEventListener('submit', e => {
     e.preventDefault()
     let thisAnswerId = parseInt(e.target.dataset.id)
@@ -205,8 +226,13 @@ document.addEventListener('DOMContentLoaded', e => {
       checker.innerHTML += `<p style="color: #FF3131" >Incorrect :(</p><p style="color: #FF3131" >The Correct Answer is "${thisAnswer.description}"</p>`
       numberIncorrect++
     }
-  })
-});
+  })// END OF START QUIZ SUBMIT LISTENER ---------------------------------------
+});// END OF DOM CONTENT LOADED EVENT LISTENER *********************************
+
+//******************************************************************************
+//HTML INSERT FUNCTIONS*********************************************************
+
+//SHOW PAGE---------------------------------------------------------------------
 function addHTMLforShowPage() {
   return `
   <div id='show-page-toggle'>
@@ -225,17 +251,15 @@ function addHTMLforShowPage() {
   </div>
   `
 }
-// <div id= 'overlay'>
-// <img src="${quiz.image}"class="image">
-// </div>
 function addHTMLforQuizShow(quiz) {
   return `
   <div id='quiz-block' data-id=${quiz.id} class="col-sm-6 text-center">
     <h1 id='quiz-block' data-id=${quiz.id} >${quiz.name}</h1>
   </div>
   `
-}
+}//END OF SHOW PAGE-------------------------------------------------------------
 
+//NEW QUIZ PAGE-----------------------------------------------------------------
 function addHTMLforNewQuizForm(){
   return `
   <div id='new-page-toggle'>
@@ -259,6 +283,7 @@ function addHTMLforNewQuizForm(){
   </div>
   `
 }
+
 function addHTMLforNewQuestionForm(quiz){
   return `
   <div id='new-page-toggle'>
@@ -287,6 +312,7 @@ function addHTMLforNewQuestionForm(quiz){
   </div>
   `
 }
+
 function addHTMLforNewAnswerForm(question){
   return `
     <h3 id='input-question-text'>${question.description}</h3>
@@ -309,8 +335,9 @@ function addHTMLforNewAnswerForm(question){
       </form>
     </div>
   `
-}
+}// END OF NEW QUIZ PAGE--------------------------------------------------------
 
+//START QUIZ PAGE---------------------------------------------------------------
 function addHTMLtoStartQuiz(quiz, questions) {
 return `
 <div id='start-quiz-toggle'>
@@ -389,5 +416,4 @@ function addHTMLforResults(correct) {
   <h1 style="color: #0279FF" > You got ${correct}% Correct!</h1>
   <br>
   `
-}
-// `<h2 style="color: #0279FF" >You got ${numberCorrect}/${total} Correct!</h2>`
+}// END OF START QUIZ PAGE------------------------------------------------------
