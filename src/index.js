@@ -36,6 +36,7 @@ document.addEventListener('DOMContentLoaded', e => {
   })
 
   showPage.addEventListener('click', e =>{
+
     showPageToggle = document.querySelector('#show-page-toggle')
     if (e.target.id === 'new-quiz-btn') {
       showPageToggle.remove()
@@ -61,12 +62,9 @@ document.addEventListener('DOMContentLoaded', e => {
     }
 
     if (e.target.id === 'answer-done-btn') {
-      createAnswerForm = document.querySelector('#create-answer-form')
-      createAnswerForm.remove()
+      answerFormDiv = document.querySelector('#answer-form-div')
+      answerFormDiv.remove()
     }
-    newPage.addEventListener('input', e =>{
-      console.log('hey');
-    })
   })
 
   newPage.addEventListener('submit', e => {
@@ -151,17 +149,21 @@ document.addEventListener('DOMContentLoaded', e => {
         allanswers.push(newAnswer)
         newId = parseInt(newAnswer.question_id)
         completedAnswers = document.querySelector(`#completed-answers-for-${newId}`)
-        completedAnswers.innerHTML += `<span>${newAnswer.description}, </span>`
+        completedAnswers.innerHTML += `<span id='answer-span'>${newAnswer.description}, </span>`
         createAnswerForm.reset()
       })
     }//end of if for answer form
   })
 
+  let numberCorrect = 0;
+  let numberIncorrect = 0;
   startQuiz.addEventListener('click', e => {
-
+    console.log(e.target)
     if (e.target.id === 'rerender-show-btn') {
       startQuizToggle = document.querySelector('#start-quiz-toggle')
       startQuizToggle.remove()
+      numberCorrect = 0
+      numberIncorrect = 0
       showPage.innerHTML = addHTMLforShowPage()
       quizNameRow = document.querySelector('#quiz-name-row')
       fetchAllQuizzes(quizNameRow)
@@ -172,11 +174,24 @@ document.addEventListener('DOMContentLoaded', e => {
       let thisAnswer = allanswers.find(a => a.id === thisAnswerId)
       if (thisAnswer.solution === true){
         e.target.parentElement.innerHTML += '<p style="color: #00e600" >Correct!</p>'
+        numberCorrect++
       }else {
         e.target.parentElement.innerHTML += '<p style="color: #FF3131" >Incorrect :(</p>'
+        numberIncorrect++
       }
     }
-  })
+
+    if (e.target.id === 'submit-quiz') {
+      quizResults = document.querySelector('#quiz-results')
+      quizBodyToggle = document.querySelector('#quiz-body-toggle')
+      submitQuizBtn = document.querySelector('#submit-quiz')
+      let total = numberCorrect + numberIncorrect
+      precentCorrect = Math.round((numberCorrect / total) * 100)
+      quizBodyToggle.remove()
+      submitQuizBtn.remove()
+      quizResults.innerHTML = addHTMLforResults(precentCorrect)
+    }
+  });
   startQuiz.addEventListener('submit', e => {
     e.preventDefault()
     let thisAnswerId = parseInt(e.target.dataset.id)
@@ -185,18 +200,20 @@ document.addEventListener('DOMContentLoaded', e => {
     let checker = e.target.parentElement.querySelector('#checker')
     if (userInputAnswer.includes(thisAnswer.description)){
       checker.innerHTML += '<p style="color: #00e600" >Correct!</p>'
+      numberCorrect++
     }else {
       checker.innerHTML += `<p style="color: #FF3131" >Incorrect :(</p><p style="color: #FF3131" >The Correct Answer is "${thisAnswer.description}"</p>`
+      numberIncorrect++
     }
   })
 });
 function addHTMLforShowPage() {
   return `
   <div id='show-page-toggle'>
-    <nav class="navbar navbar-light bg-light">
-      <a class="navbar-brand">Quiz Yo Self</a>
+    <nav class="navbar">
+      <a class="navbar-brand">Quiz Yo Self!</a>
       <div class="form-inline">
-        <button id='new-quiz-btn' class="btn my-2 my-sm-0" type="submit">Create Quiz</button>
+        <button id='new-quiz-btn' class="btn btn-outline-light" type="submit">Create Quiz</button>
       </div>
     </nav>
 
@@ -208,11 +225,13 @@ function addHTMLforShowPage() {
   </div>
   `
 }
-
+// <div id= 'overlay'>
+// <img src="${quiz.image}"class="image">
+// </div>
 function addHTMLforQuizShow(quiz) {
   return `
   <div id='quiz-block' data-id=${quiz.id} class="col-sm-6 text-center">
-    ${quiz.name}
+    <h1 id='quiz-block' data-id=${quiz.id} >${quiz.name}</h1>
   </div>
   `
 }
@@ -220,86 +239,95 @@ function addHTMLforQuizShow(quiz) {
 function addHTMLforNewQuizForm(){
   return `
   <div id='new-page-toggle'>
-    <h2>Create Yo Quiz</h2>
-    <form id=create-quiz-form>
-      <div class="form-group">
-        <label for="quizTitle">Quiz Title</label>
-        <input name="quizTitle" class="form-control" id="quizTitleInput" placeholder="Enter Your Title">
-      </div>
+    <div class='container text-center quiz-form'>
+      <form id=create-quiz-form>
+        <h2>Create Yo Quiz!</h2>
+        <div class="form-group">
+          <label for="quizTitle">Quiz Title</label>
+          <input name="quizTitle" class="form-control" id="quizTitleInput" placeholder="Enter Your Title">
+        </div>
 
-      <div class="form-group">
-        <label for="quizImage">Image</label>
-        <input name="quizImage" class="form-control" placeholder="Enter Your Image">
-      </div>
-      <button type="submit" class="btn btn-primary">Submit</button>
-      <button id='rerender-show-btn' class="btn btn-secondary" type="button">Go Back</button>
-    </form>
-    <br>
-    <hr>
+        <div class="form-group">
+          <label for="quizImage">Image</label>
+          <input name="quizImage" class="form-control" placeholder="Enter Your Image">
+        </div>
+        <button type="submit" class="btn btn-primary btn-lg">Submit</button>
+        <button id='rerender-show-btn' class="btn btn-secondary btn-lg" type="button">Go Back</button>
+      </form>
+      <br>
+    </div>
   </div>
   `
 }
 function addHTMLforNewQuestionForm(quiz){
   return `
   <div id='new-page-toggle'>
-    <h1>${quiz.name}</h1>
-    <hr>
-    <div id='completed-questions'>
+    <div class='container text-center header'>
+    <h1 id='quiz-name'>${quiz.name}</h1>
     </div>
-    <hr>
-    <h2>Add Questions Fo Yo Quiz</h2>
-    <form data-id=${quiz.id} id=create-question-form>
-      <div class="form-group">
-        <label for="questionDescription">Question Description</label>
-        <input name="questionDescription" class="form-control" id="questionDescription" placeholder="Enter Your Question Description">
+    <div id='completed-questions' class='container text-center'>
+    </div>
+      <div class='container text-center question-form'>
+        <form data-id=${quiz.id} id='create-question-form'>
+          <h2 id='question-from-header'>Add Questions Fo Yo Quiz</h2>
+          <div class="form-group">
+            <label for="questionDescription">Question Description</label>
+            <input name="questionDescription" class="form-control" id="questionDescription" placeholder="Enter Your Question Description">
+          </div>
+          <div class="form-group form-check">
+            <input type="checkbox" name="multipleChoice" class="form-check-input" id="multipleChoice">
+            <label class="form-check-label" for="multipleChoice">Multiple Choice?</label>
+          </div>
+          <input type="hidden" name="quizId" value=${quiz.id}>
+          <button type="submit" class="btn btn-primary">Submit</button>
+          <button id='rerender-show-btn' class="btn btn-secondary" type="button">Finished</button>
+        </form>
       </div>
-      <div class="form-group form-check">
-        <input type="checkbox" name="multipleChoice" class="form-check-input" id="multipleChoice">
-        <label class="form-check-label" for="multipleChoice">Multiple Choice?</label>
-      </div>
-      <input type="hidden" name="quizId" value=${quiz.id}>
-      <button type="submit" class="btn btn-primary">Submit</button>
-      <button id='rerender-show-btn' class="btn btn-secondary" type="button">Finished</button>
-    </form>
-    <hr>
     <br>
   </div>
   `
 }
 function addHTMLforNewAnswerForm(question){
   return `
-    <h3>${question.description}</h3>
+    <h3 id='input-question-text'>${question.description}</h3>
     <div id='completed-answers-for-${question.id}'>
     </div>
-    <hr>
-    <form data-id='${question.id}' id='create-answer-form'>
-      <h5>Add Answers Fo Yo Question</h5>
-      <div class="form-group">
-        <label for="answerDescription">Answer Description</label>
-        <input name="answerDescription" class="form-control" id="answerDescription" placeholder="Enter Your Answer Description">
-      </div>
-      <div class="form-group form-check">
-        <input type="checkbox" name="solution" class="form-check-input" id="solution">
-        <label class="form-check-label" for="solution" checked>Solution?</label>
-      </div>
-      <input type="hidden" name="questionId" value=${question.id}>
-      <button type="submit" class="btn btn-primary btn-sm">Submit</button>
-      <button type="button" class="btn btn-secondary btn-sm" id='answer-done-btn' >Done</button>
-    </form>
+    <div id='answer-form-div'class='container text-center answer-form'>
+      <form data-id='${question.id}' id='create-answer-form'>
+        <h5 id='answer-from-header'>Add Answers Fo Yo Question</h5>
+        <div class="form-group">
+          <label for="answerDescription">Answer Description</label>
+          <input name="answerDescription" class="form-control" id="answerDescription" placeholder="Enter Your Answer Description">
+        </div>
+        <div class="form-group form-check">
+          <input type="checkbox" name="solution" class="form-check-input" id="solution">
+          <label class="form-check-label" for="solution" checked>Solution?</label>
+        </div>
+        <input type="hidden" name="questionId" value=${question.id}>
+        <button type="submit" class="btn btn-primary btn-sm">Submit</button>
+        <button type="button" class="btn btn-secondary btn-sm" id='answer-done-btn' >Done</button>
+      </form>
+    </div>
   `
 }
 
 function addHTMLtoStartQuiz(quiz, questions) {
 return `
-<div class='align-middle' id='start-quiz-toggle'>
-  <h1> ${quiz.name}</h1>
-  <hr>
-  <div id='question-container'>
-    <br>
-    ${showAllQuestions(questions)}
+<div id='start-quiz-toggle'>
+  <div id='quiz-body-toggle' class = "quiz-title">
+    <h1 id='quiz-name'> ${quiz.name}</h1>
+    <div id='question-container' class = 'container'>
+      <br>
+      ${showAllQuestions(questions)}
+
+    </div>
   </div>
-  <button id='submit-quiz' class="btn btn-primary" type="button">Submit</button>
-  <button id='rerender-show-btn' class="btn btn-secondary" type="button">Go Back</button>
+  <div id="quiz-results">
+  </div>
+  <div id="center-btn" class="container">
+  <button id="submit-quiz" type="button" class="btn btn-primary answer-btn ">Submit</button>
+  <button id='rerender-show-btn' class="btn btn-secondary answer-btn" type="button">Go Back</button>
+  </div>
 </div>
 `
 }
@@ -331,7 +359,6 @@ function addHTMLtoShowQuestions(question) {
       </form>
       <div id='checker'>
       </div>
-      <hr>
       <br>
       <br>
     </div>
@@ -345,7 +372,7 @@ function showAllQuestions(questions) {
 
 function addHTMLforAnswerOnQuestions(answer) {
   return `
-  <li class="list-group-item">
+  <li class="list-group-item" id="answer" data-id=${answer.id}>
     <p id="answer" data-id=${answer.id}>
     ${answer.description}
     </p>
@@ -356,3 +383,11 @@ function addHTMLforAnswerOnQuestions(answer) {
 function showAllAnswers(answers) {
   return answers.map(a => addHTMLforAnswerOnQuestions(a)).join('')
 }
+
+function addHTMLforResults(correct) {
+  return `
+  <h1 style="color: #0279FF" > You got ${correct}% Correct!</h1>
+  <br>
+  `
+}
+// `<h2 style="color: #0279FF" >You got ${numberCorrect}/${total} Correct!</h2>`
