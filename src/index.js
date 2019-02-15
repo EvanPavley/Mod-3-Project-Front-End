@@ -68,7 +68,7 @@ document.addEventListener('DOMContentLoaded', e => {
   // NEW PAGE CLICK LISTENER ---------------------------------------------------
   newPage.addEventListener('click', e => {
     // for clicking the back button
-    if (e.target.id === 'rerender-show-btn') {
+    if (e.target.dataset.id === 'rerender-show-btn') {
       newPageToggle = document.querySelector('#new-page-toggle')
       newPageToggle.remove()
       showPage.innerHTML = addHTMLforShowPage()
@@ -89,7 +89,6 @@ document.addEventListener('DOMContentLoaded', e => {
     if (e.target.id === 'create-quiz-form') {
       let newQuiz
       let newQuizTitle = e.target.quizTitle.value
-      let newQuizImage = e.target.quizImage.value
       fetch(quizUrl, {
         method: 'POST',
         headers: {
@@ -97,8 +96,7 @@ document.addEventListener('DOMContentLoaded', e => {
             "Accept": "application/json"
         },
         body:JSON.stringify({
-          name: newQuizTitle,
-          image: newQuizImage
+          name: newQuizTitle
         })
       })//end of fetch
       .then(r => r.json())
@@ -177,7 +175,7 @@ document.addEventListener('DOMContentLoaded', e => {
   // START QUIZ CLICK LISTENER -------------------------------------------------
   startQuiz.addEventListener('click', e => {
     // for clicking the go back button
-    if (e.target.id === 'rerender-show-btn') {
+    if (e.target.dataset.id === 'rerender-show-btn') {
       startQuizToggle = document.querySelector('#start-quiz-toggle')
       startQuizToggle.remove()
       //reset numbers
@@ -192,10 +190,22 @@ document.addEventListener('DOMContentLoaded', e => {
       let thisAnswerId = parseInt(e.target.dataset.id)
       let thisAnswer = allanswers.find(a => a.id === thisAnswerId)
       if (thisAnswer.solution === true){
-        e.target.parentElement.innerHTML += '<p style="color: #00e600" >Correct!</p>'
+        e.target.style.backgroundColor = "#9AFB8D"
         numberCorrect++
       }else {
-        e.target.parentElement.innerHTML += '<p style="color: #FF3131" >Incorrect :(</p>'
+        let answersForQuestion = allanswers.filter(a => a.question_id === thisAnswer.question_id)
+        let correctAnswer = answersForQuestion.find(a => a.solution === true)
+        let eachLi = e.target.parentElement.querySelectorAll('li')
+        function getCorrectLi() {
+          for (var i = 0; i < eachLi.length; i++) {
+            if (eachLi[i].dataset.id == correctAnswer.id){
+              return eachLi[i]
+            }
+          }
+        }
+        theCorrectLi = getCorrectLi()
+        theCorrectLi.style.backgroundColor = "#dbf9d6"
+        e.target.style.backgroundColor = "#ff8484"
         numberIncorrect++
       }
     }
@@ -214,16 +224,22 @@ document.addEventListener('DOMContentLoaded', e => {
 
   // START QUIZ SUBMIT LISTENER ------------------------------------------------
   startQuiz.addEventListener('submit', e => {
+    thisSubmitBtn = e.target.children[2]
     e.preventDefault()
     let thisAnswerId = parseInt(e.target.dataset.id)
     let thisAnswer = allanswers.find(a => a.id == thisAnswerId)
     let userInputAnswer = e.target.users_answer.value
     let checker = e.target.parentElement.querySelector('#checker')
     if (userInputAnswer.includes(thisAnswer.description)){
-      checker.innerHTML += '<p style="color: #00e600" >Correct!</p>'
+      thisSubmitBtn.style.backgroundColor = "#28BA14"
+      thisSubmitBtn.style.borderColor = "#28BA14"
+      thisSubmitBtn.innerText = "Correct"
       numberCorrect++
     }else {
-      checker.innerHTML += `<p style="color: #FF3131" >Incorrect :(</p><p style="color: #FF3131" >The Correct Answer is "${thisAnswer.description}"</p>`
+      thisSubmitBtn.style.backgroundColor = "#E01136"
+      thisSubmitBtn.style.borderColor = "#E01136"
+      thisSubmitBtn.innerText = "Incorrect"
+      checker.innerHTML += `<p style="color: white" >The Correct Answer is: "${thisAnswer.description}"</p>`
       numberIncorrect++
     }
   })// END OF START QUIZ SUBMIT LISTENER ---------------------------------------
@@ -237,7 +253,7 @@ function addHTMLforShowPage() {
   return `
   <div id='show-page-toggle'>
     <nav class="navbar">
-      <a class="navbar-brand">Quiz Yo Self!</a>
+      <a class="navbar-brand"><img src="images/questionMarkLogo.png" alt="Question Mark Logo">Quiz Yo Self!</a>
       <div class="form-inline">
         <button id='new-quiz-btn' class="btn btn-outline-light" type="submit">Create Quiz</button>
       </div>
@@ -270,13 +286,8 @@ function addHTMLforNewQuizForm(){
           <label for="quizTitle">Quiz Title</label>
           <input name="quizTitle" class="form-control" id="quizTitleInput" placeholder="Enter Your Title">
         </div>
-
-        <div class="form-group">
-          <label for="quizImage">Image</label>
-          <input name="quizImage" class="form-control" placeholder="Enter Your Image">
-        </div>
         <button type="submit" class="btn btn-primary btn-lg">Submit</button>
-        <button id='rerender-show-btn' class="btn btn-secondary btn-lg" type="button">Go Back</button>
+        <button data-id='rerender-show-btn' class="btn btn-secondary btn-lg" type="button">Go Back</button>
       </form>
       <br>
     </div>
@@ -286,29 +297,35 @@ function addHTMLforNewQuizForm(){
 
 function addHTMLforNewQuestionForm(quiz){
   return `
-  <div id='new-page-toggle'>
-    <div class='container text-center header'>
-    <h1 id='quiz-name'>${quiz.name}</h1>
-    </div>
-    <div id='completed-questions' class='container text-center'>
-    </div>
-      <div class='container text-center question-form'>
-        <form data-id=${quiz.id} id='create-question-form'>
-          <h2 id='question-from-header'>Add Questions Fo Yo Quiz</h2>
-          <div class="form-group">
-            <label for="questionDescription">Question Description</label>
-            <input name="questionDescription" class="form-control" id="questionDescription" placeholder="Enter Your Question Description">
-          </div>
-          <div class="form-group form-check">
-            <input type="checkbox" name="multipleChoice" class="form-check-input" id="multipleChoice">
-            <label class="form-check-label" for="multipleChoice">Multiple Choice?</label>
-          </div>
-          <input type="hidden" name="quizId" value=${quiz.id}>
-          <button type="submit" class="btn btn-primary">Submit</button>
-          <button id='rerender-show-btn' class="btn btn-secondary" type="button">Finished</button>
-        </form>
+  <div id='new-page-toggle' class= "container question-form">
+    <div class='row'>
+      <div class='col-sm-6' id='leftcol' >
+        <div class='header text-left'>
+          <h1 id='quiz-name'>${quiz.name}</h1>
+        </div>
+        <div id='completed-questions' class='text-left'>
+        </div>
       </div>
-    <br>
+      <div class='col-sm-6'>
+        <div class='question-form'>
+            <form data-id=${quiz.id} id='create-question-form'>
+              <h2 id='question-from-header'>Add Questions Fo Yo Quiz</h2>
+              <div class="form-group">
+                <label for="questionDescription">Question Description</label>
+                <input name="questionDescription" class="form-control" id="questionDescription" placeholder="Enter Your Question Description">
+              </div>
+              <div class="form-group form-check">
+                <input type="checkbox" name="multipleChoice" class="form-check-input" id="multipleChoice">
+                <label class="form-check-label" for="multipleChoice">Multiple Choice?</label>
+              </div>
+              <input type="hidden" name="quizId" value=${quiz.id}>
+              <button type="submit" class="btn btn-primary">Submit</button>
+              <button data-id='rerender-show-btn' class="btn btn-secondary" type="button">Finished</button>
+            </form>
+          </div>
+        <br>
+      </div>
+    </div>
   </div>
   `
 }
@@ -353,7 +370,7 @@ return `
   </div>
   <div id="center-btn" class="container">
   <button id="submit-quiz" type="button" class="btn btn-primary answer-btn ">Submit</button>
-  <button id='rerender-show-btn' class="btn btn-secondary answer-btn" type="button">Go Back</button>
+  <button data-id='rerender-show-btn' id='quiz-start-goback' class="btn btn-secondary answer-btn" type="button">Go Back</button>
   </div>
 </div>
 `
@@ -380,13 +397,11 @@ function addHTMLtoShowQuestions(question) {
         <h3>${question.description}</h3>
         <div class="form-group">
           <input name="users_answer" class="form-control" id="userAnswer" data-id=${thisAnswersId} placeholder="Enter Your Answer Here">
-          <br>
-          <button type="submit" class="btn btn-primary btn-sm">Submit</button>
         </div>
+        <button id="userAnswerSubmit" type="submit" class="btn btn-primary btn">Submit</button>
       </form>
       <div id='checker'>
       </div>
-      <br>
       <br>
     </div>
     `
@@ -400,12 +415,12 @@ function showAllQuestions(questions) {
 function addHTMLforAnswerOnQuestions(answer) {
   return `
   <li class="list-group-item" id="answer" data-id=${answer.id}>
-    <p id="answer" data-id=${answer.id}>
     ${answer.description}
-    </p>
   </li>
   `
 }
+// <p id="answer" data-id=${answer.id}>
+// </p>
 
 function showAllAnswers(answers) {
   return answers.map(a => addHTMLforAnswerOnQuestions(a)).join('')
@@ -414,6 +429,9 @@ function showAllAnswers(answers) {
 function addHTMLforResults(correct) {
   return `
   <h1 style="color: #0279FF" > You got ${correct}% Correct!</h1>
+  <div class="text-center">
+    <img height="300" width="300" src="https://media.giphy.com/media/IB9foBA4PVkKA/giphy.gif" alt="Banana Danceing">
+  </div>
   <br>
   `
 }// END OF START QUIZ PAGE------------------------------------------------------
