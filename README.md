@@ -1,9 +1,9 @@
 <img alt="qysLogo" src="Screenshots/qysLOGO.png" width="749px" height="150px">
 
+[Demo Video](https://www.youtube.com/watch?v=Oj2CSuo6V4k&feature=youtu.be)
+
 Test your own and your friends’ knowledge with Quiz Yourself, the quiz creation web-app.
 Created by Evan Pavley and Zeshawn Kahn.
-
-[Demo Video](https://www.youtube.com/watch?v=Oj2CSuo6V4k&feature=youtu.be)
 
 ## Features
 
