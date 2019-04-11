@@ -253,7 +253,7 @@ function addHTMLforShowPage() {
   return `
   <div id='show-page-toggle'>
     <nav class="navbar">
-      <a class="navbar-brand"><img src="images/questionMarkLogo.png" alt="Question Mark Logo">Quiz Yo Self!</a>
+      <a class="navbar-brand"><img src="images/questionMarkLogo.png" alt="Question Mark Logo">Quiz YourSelf!</a>
       <div class="form-inline">
         <button id='new-quiz-btn' class="btn btn-outline-light" type="submit">Create Quiz</button>
       </div>
@@ -281,7 +281,7 @@ function addHTMLforNewQuizForm(){
   <div id='new-page-toggle'>
     <div class='container text-center quiz-form'>
       <form id=create-quiz-form>
-        <h2>Create Yo Quiz!</h2>
+        <h2>Create Your Quiz!</h2>
         <div class="form-group">
           <label for="quizTitle">Quiz Title</label>
           <input name="quizTitle" class="form-control" id="quizTitleInput" placeholder="Enter Your Title">
@@ -309,7 +309,7 @@ function addHTMLforNewQuestionForm(quiz){
       <div class='col-sm-6'>
         <div class='question-form'>
             <form data-id=${quiz.id} id='create-question-form'>
-              <h2 id='question-from-header'>Add Questions Fo Yo Quiz</h2>
+              <h2 id='question-from-header'>Add Questions For YourQuiz</h2>
               <div class="form-group">
                 <label for="questionDescription">Question Description</label>
                 <input name="questionDescription" class="form-control" id="questionDescription" placeholder="Enter Your Question Description">
@@ -337,7 +337,7 @@ function addHTMLforNewAnswerForm(question){
     </div>
     <div id='answer-form-div'class='container text-center answer-form'>
       <form data-id='${question.id}' id='create-answer-form'>
-        <h5 id='answer-from-header'>Add Answers Fo Yo Question</h5>
+        <h5 id='answer-from-header'>Add Answers For Your Question</h5>
         <div class="form-group">
           <label for="answerDescription">Answer Description</label>
           <input name="answerDescription" class="form-control" id="answerDescription" placeholder="Enter Your Answer Description">
